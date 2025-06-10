@@ -1,0 +1,6 @@
+INSERT INTO Mangas (Titulo, Autor, Estado, NumeroCapitulos, Descripcion, Genero, FechaPublicacion, ImagenUrl, Calificacion) VALUES
+('One Piece', 'Eiichiro Oda', 'En emisión', 1080, 'La historia de Monkey D. Luffy y su tripulación en busca del One Piece', 'Aventura, Acción', '1997-07-22', 'https://example.com/onepiece.jpg', 4.8),
+('Naruto', 'Masashi Kishimoto', 'Finalizado', 700, 'La historia de Naruto Uzumaki y su camino para convertirse en Hokage', 'Acción, Fantasía', '1999-09-21', 'https://example.com/naruto.jpg', 4.7),
+('Dragon Ball', 'Akira Toriyama', 'Finalizado', 519, 'Las aventuras de Goku y sus amigos defendiendo la Tierra', 'Acción, Aventura', '1984-11-20', 'https://example.com/dragonball.jpg', 4.6),
+('Death Note', 'Tsugumi Ohba', 'Finalizado', 108, 'Un estudiante encuentra un cuaderno que puede matar personas', 'Thriller, Psicológico', '2003-12-01', 'https://example.com/deathnote.jpg', 4.9),
+('Attack on Titan', 'Hajime Isayama', 'Finalizado', 139, 'La humanidad lucha por sobrevivir contra los titanes', 'Acción, Drama', '2009-09-09', 'https://example.com/aot.jpg', 4.8); 

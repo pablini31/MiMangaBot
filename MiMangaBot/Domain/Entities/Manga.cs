@@ -1,19 +1,34 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace MiMangaBot.Domain.Entities;
 
 public class Manga
 {
+    [Key]
     public int Id { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public string Author { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public string CoverImageUrl { get; set; } = string.Empty;
-    public int TotalChapters { get; set; }
-    public string Status { get; set; } = string.Empty; // Ongoing, Completed, Hiatus
-    public List<string> Genres { get; set; } = new();
-    public DateTime ReleaseDate { get; set; }
-    public DateTime LastUpdated { get; set; }
-    public double Rating { get; set; }
-    public int Views { get; set; }
-    public bool IsPopular { get; set; }
-    public bool IsCompleted { get; set; }
+    
+    [Required]
+    [StringLength(200)]
+    public string Titulo { get; set; } = string.Empty;
+    
+    [StringLength(100)]
+    public string? Autor { get; set; }
+    
+    [StringLength(50)]
+    public string? Estado { get; set; } // En emisión, Finalizado, etc.
+    
+    public int NumeroCapitulos { get; set; }
+    
+    [StringLength(500)]
+    public string? Descripcion { get; set; }
+    
+    [StringLength(100)]
+    public string? Genero { get; set; }
+    
+    public DateTime FechaPublicacion { get; set; }
+    
+    [StringLength(200)]
+    public string? ImagenUrl { get; set; }
+    
+    public double Calificacion { get; set; }
 } 

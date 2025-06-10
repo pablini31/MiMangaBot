@@ -1,11 +1,34 @@
+using Microsoft.EntityFrameworkCore;
+using MiMangaBot.Domain.Data;
 using MiMangaBot.Services.Features.Mangas;
+using MiMangaBot.Scripts;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// Configurar la base de datos
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+    ));
+
+// Registrar el seeder
+builder.Services.AddScoped<MangaDataSeeder>();
+
+// Configurar Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "MiMangaBot API",
+        Version = "v1",
+        Description = "API para gestionar una colección de mangas"
+    });
+});
 
 // Registrar el MangaService
 builder.Services.AddScoped<MangaService>();
@@ -25,31 +48,21 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "MiMangaBot API V1");
-        c.RoutePrefix = "swagger";
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MiMangaBot API V1");
+    c.RoutePrefix = "swagger";
+});
 
-// Importante: el orden de estos middleware es crucial
-app.UseRouting();
-app.UseCors("AllowAll");
+app.UseHttpsRedirection();
 app.UseAuthorization();
-
-// Mapear los controladores
 app.MapControllers();
 
-// Endpoint de prueba simple
-app.MapGet("/", () => "¡API de Manga funcionando!");
+// Agregar un endpoint de prueba
+app.MapGet("/", () => "API is running! Go to /swagger for the API documentation");
 
-// Endpoint de prueba adicional
-app.MapGet("/test", () => new { 
-    status = "success", 
-    message = "Test endpoint funcionando" 
-});
+Console.WriteLine("Application is starting...");
+Console.WriteLine("Swagger UI should be available at: http://localhost:5000/swagger");
 
 app.Run();

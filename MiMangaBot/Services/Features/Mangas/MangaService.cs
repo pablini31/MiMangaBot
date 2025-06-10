@@ -27,9 +27,9 @@ public class MangaService
 
     public async Task<Manga> AddMangaAsync(Manga manga)
     {
-        _logger.LogInformation($"Agregando nuevo manga: {manga.Title}");
+        _logger.LogInformation($"Agregando nuevo manga: {manga.Titulo}");
         manga.Id = _mangas.Count + 1;
-        manga.LastUpdated = DateTime.UtcNow;
+        manga.FechaPublicacion = DateTime.UtcNow;
         _mangas.Add(manga);
         return await Task.FromResult(manga);
     }
@@ -41,17 +41,14 @@ public class MangaService
         if (existingManga == null)
             return null;
 
-        existingManga.Title = updatedManga.Title;
-        existingManga.Author = updatedManga.Author;
-        existingManga.Description = updatedManga.Description;
-        existingManga.CoverImageUrl = updatedManga.CoverImageUrl;
-        existingManga.TotalChapters = updatedManga.TotalChapters;
-        existingManga.Status = updatedManga.Status;
-        existingManga.Genres = updatedManga.Genres;
-        existingManga.Rating = updatedManga.Rating;
-        existingManga.IsPopular = updatedManga.IsPopular;
-        existingManga.IsCompleted = updatedManga.IsCompleted;
-        existingManga.LastUpdated = DateTime.UtcNow;
+        existingManga.Titulo = updatedManga.Titulo;
+        existingManga.Autor = updatedManga.Autor;
+        existingManga.Descripcion = updatedManga.Descripcion;
+        existingManga.ImagenUrl = updatedManga.ImagenUrl;
+        existingManga.NumeroCapitulos = updatedManga.NumeroCapitulos;
+        existingManga.Estado = updatedManga.Estado;
+        existingManga.Genero = updatedManga.Genero;
+        existingManga.Calificacion = updatedManga.Calificacion;
 
         return await Task.FromResult(existingManga);
     }
@@ -67,18 +64,12 @@ public class MangaService
         return await Task.FromResult(true);
     }
 
-    public async Task<IEnumerable<Manga>> GetPopularMangasAsync()
-    {
-        _logger.LogInformation("Obteniendo mangas populares");
-        return await Task.FromResult(_mangas.Where(m => m.IsPopular));
-    }
-
     public async Task<IEnumerable<Manga>> SearchMangasAsync(string searchTerm)
     {
         _logger.LogInformation($"Buscando mangas con término: {searchTerm}");
         return await Task.FromResult(_mangas.Where(m => 
-            m.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-            m.Author.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-            m.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+            (m.Titulo?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (m.Autor?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (m.Descripcion?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)));
     }
 } 

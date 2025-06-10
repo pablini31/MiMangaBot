@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MiMangaBot.Domain.Data;
 using MiMangaBot.Domain.Entities;
 using MiMangaBot.Services.Features.Mangas;
+using MiMangaBot.Scripts;
 
 namespace MiMangaBot.Controllers.V1;
 
@@ -10,11 +13,15 @@ public class MangaController : ControllerBase
 {
     private readonly MangaService _mangaService;
     private readonly ILogger<MangaController> _logger;
+    private readonly MangaDataSeeder _seeder;
+    private readonly ApplicationDbContext _context;
 
-    public MangaController(MangaService mangaService, ILogger<MangaController> logger)
+    public MangaController(MangaService mangaService, ILogger<MangaController> logger, MangaDataSeeder seeder, ApplicationDbContext context)
     {
         _mangaService = mangaService;
         _logger = logger;
+        _seeder = seeder;
+        _context = context;
     }
 
     [HttpGet]
@@ -107,21 +114,6 @@ public class MangaController : ControllerBase
         }
     }
 
-    [HttpGet("popular")]
-    public async Task<ActionResult<IEnumerable<Manga>>> GetPopularMangas()
-    {
-        try
-        {
-            var popularMangas = await _mangaService.GetPopularMangasAsync();
-            return Ok(popularMangas);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al obtener mangas populares");
-            return StatusCode(500, "Error interno del servidor");
-        }
-    }
-
     [HttpGet("search")]
     public async Task<ActionResult<IEnumerable<Manga>>> SearchMangas([FromQuery] string query)
     {
@@ -137,6 +129,51 @@ public class MangaController : ControllerBase
         {
             _logger.LogError(ex, $"Error al buscar mangas con término: {query}");
             return StatusCode(500, "Error interno del servidor");
+        }
+    }
+
+    [HttpPost("seed")]
+    public async Task<IActionResult> SeedMangas([FromQuery] int count = 3500)
+    {
+        try
+        {
+            await _seeder.SeedMangasAsync(count);
+            return Ok(new { 
+                message = $"Se han insertado {count} mangas exitosamente",
+                timestamp = DateTime.Now
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al sembrar datos de mangas");
+            return StatusCode(500, new { 
+                error = "Error al sembrar datos de mangas",
+                details = ex.Message,
+                timestamp = DateTime.Now
+            });
+        }
+    }
+
+    [HttpGet("test-connection")]
+    public async Task<IActionResult> TestConnection()
+    {
+        try
+        {
+            var count = await _context.Mangas.CountAsync();
+            return Ok(new { 
+                message = "Conexión exitosa a la base de datos",
+                mangasCount = count,
+                timestamp = DateTime.Now
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al conectar con la base de datos");
+            return StatusCode(500, new { 
+                error = "Error al conectar con la base de datos",
+                details = ex.Message,
+                timestamp = DateTime.Now
+            });
         }
     }
 } 
