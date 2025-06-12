@@ -176,4 +176,47 @@ public class MangaController : ControllerBase
             });
         }
     }
+
+    [HttpGet("duplicates")]
+    public async Task<IActionResult> GetDuplicateMangas()
+    {
+        try
+        {
+            var duplicates = await _context.Mangas
+                .GroupBy(m => m.Titulo)
+                .Where(g => g.Count() > 1)
+                .Select(g => new
+                {
+                    Titulo = g.Key,
+                    Cantidad = g.Count(),
+                    Mangas = g.Select(m => new
+                    {
+                        m.Id,
+                        m.Titulo,
+                        m.Autor,
+                        m.Estado,
+                        m.NumeroCapitulos,
+                        m.Genero,
+                        m.FechaPublicacion
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                totalDuplicados = duplicates.Count,
+                mangasDuplicados = duplicates
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al buscar mangas duplicados");
+            return StatusCode(500, new
+            {
+                error = "Error al buscar mangas duplicados",
+                details = ex.Message,
+                timestamp = DateTime.Now
+            });
+        }
+    }
 } 
