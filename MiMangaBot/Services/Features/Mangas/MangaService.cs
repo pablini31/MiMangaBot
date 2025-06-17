@@ -63,13 +63,4 @@ public class MangaService
         _mangas.Remove(manga);
         return await Task.FromResult(true);
     }
-
-    public async Task<IEnumerable<Manga>> SearchMangasAsync(string searchTerm)
-    {
-        _logger.LogInformation($"Buscando mangas con término: {searchTerm}");
-        return await Task.FromResult(_mangas.Where(m => 
-            (m.Titulo?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
-            (m.Autor?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
-            (m.Descripcion?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)));
-    }
 } 

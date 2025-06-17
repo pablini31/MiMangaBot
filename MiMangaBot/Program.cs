@@ -1,68 +1,38 @@
-using Microsoft.EntityFrameworkCore;
-using MiMangaBot.Domain.Data;
+using Microsoft.OpenApi.Models;
 using MiMangaBot.Services.Features.Mangas;
-using MiMangaBot.Scripts;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Configurar la base de datos
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
-    ));
-
-// Registrar el seeder
-builder.Services.AddScoped<MangaDataSeeder>();
-
-// Configurar Swagger
+// Configure Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-    {
-        Title = "MiMangaBot API",
+    c.SwaggerDoc("v1", new OpenApiInfo 
+    { 
+        Title = "MiMangaBot API", 
         Version = "v1",
-        Description = "API para gestionar una colección de mangas"
+        Description = "API para gestionar mangas"
     });
 });
 
 // Registrar el MangaService
 builder.Services.AddScoped<MangaService>();
 
-// Add CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        builder =>
-        {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
-        });
-});
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Habilitar Swagger SIEMPRE
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "MiMangaBot API V1");
-    c.RoutePrefix = "swagger";
+    c.RoutePrefix = string.Empty; // Swagger en la raíz
 });
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection(); // Eliminado para evitar problemas de redirección
 app.UseAuthorization();
 app.MapControllers();
-
-// Agregar un endpoint de prueba
-app.MapGet("/", () => "API is running! Go to /swagger for the API documentation");
-
-Console.WriteLine("Application is starting...");
-Console.WriteLine("Swagger UI should be available at: http://localhost:5000/swagger");
 
 app.Run();
