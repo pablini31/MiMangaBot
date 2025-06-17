@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MiMangaBot.Domain.Data;
 using MiMangaBot.Domain.Entities;
+using MiMangaBot.Domain.Models;
 
 namespace MiMangaBot.Services.Features.Mangas;
 
@@ -15,10 +16,19 @@ public class MangaService
         _context = context;
     }
 
-    public async Task<IEnumerable<Manga>> GetAllMangasAsync()
+    public async Task<PaginatedResponse<Manga>> GetAllMangasAsync(PaginationParameters parameters)
     {
-        _logger.LogInformation("Obteniendo todos los mangas");
-        return await _context.Manga.ToListAsync();
+        _logger.LogInformation("Obteniendo mangas paginados");
+        
+        var query = _context.Manga.AsQueryable();
+        var totalCount = await query.CountAsync();
+        
+        var items = await query
+            .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+            .Take(parameters.PageSize)
+            .ToListAsync();
+
+        return new PaginatedResponse<Manga>(items, parameters.PageNumber, parameters.PageSize, totalCount);
     }
 
     public async Task<Manga?> GetMangaByIdAsync(int id)

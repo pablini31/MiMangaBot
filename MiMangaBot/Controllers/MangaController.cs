@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MiMangaBot.Domain.Entities;
+using MiMangaBot.Domain.Models;
 using MiMangaBot.Services.Features.Mangas;
 
 namespace MiMangaBot.Controllers;
@@ -29,16 +30,16 @@ public class MangaController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Manga>>> GetAll()
+    public async Task<ActionResult<PaginatedResponse<Manga>>> GetAll([FromQuery] PaginationParameters parameters)
     {
         try
         {
-            var mangas = await _mangaService.GetAllMangasAsync();
+            var mangas = await _mangaService.GetAllMangasAsync(parameters);
             return Ok(mangas);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al obtener todos los mangas");
+            _logger.LogError(ex, "Error al obtener los mangas paginados");
             return StatusCode(500, "Error interno del servidor");
         }
     }
