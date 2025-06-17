@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using MiMangaBot.Domain.Data;
 using MiMangaBot.Domain.Entities;
 
 namespace MiMangaBot.Services.Features.Mangas;
@@ -5,62 +7,59 @@ namespace MiMangaBot.Services.Features.Mangas;
 public class MangaService
 {
     private readonly ILogger<MangaService> _logger;
-    private readonly List<Manga> _mangas;
+    private readonly ApplicationDbContext _context;
 
-    public MangaService(ILogger<MangaService> logger)
+    public MangaService(ILogger<MangaService> logger, ApplicationDbContext context)
     {
         _logger = logger;
-        _mangas = new List<Manga>();
+        _context = context;
     }
 
     public async Task<IEnumerable<Manga>> GetAllMangasAsync()
     {
         _logger.LogInformation("Obteniendo todos los mangas");
-        return await Task.FromResult(_mangas);
+        return await _context.Manga.ToListAsync();
     }
 
     public async Task<Manga?> GetMangaByIdAsync(int id)
     {
         _logger.LogInformation($"Buscando manga con ID: {id}");
-        return await Task.FromResult(_mangas.FirstOrDefault(m => m.Id == id));
+        return await _context.Manga.FindAsync(id);
     }
 
-    public async Task<Manga> AddMangaAsync(Manga manga)
+    public async Task<Manga> CreateMangaAsync(Manga manga)
     {
         _logger.LogInformation($"Agregando nuevo manga: {manga.Titulo}");
-        manga.Id = _mangas.Count + 1;
-        manga.FechaPublicacion = DateTime.UtcNow;
-        _mangas.Add(manga);
-        return await Task.FromResult(manga);
+        _context.Manga.Add(manga);
+        await _context.SaveChangesAsync();
+        return manga;
     }
 
-    public async Task<Manga?> UpdateMangaAsync(int id, Manga updatedManga)
+    public async Task<bool> UpdateMangaAsync(Manga updatedManga)
     {
-        _logger.LogInformation($"Actualizando manga con ID: {id}");
-        var existingManga = _mangas.FirstOrDefault(m => m.Id == id);
+        _logger.LogInformation($"Actualizando manga con ID: {updatedManga.Id}");
+        var existingManga = await _context.Manga.FindAsync(updatedManga.Id);
         if (existingManga == null)
-            return null;
+            return false;
 
         existingManga.Titulo = updatedManga.Titulo;
         existingManga.Autor = updatedManga.Autor;
-        existingManga.Descripcion = updatedManga.Descripcion;
-        existingManga.ImagenUrl = updatedManga.ImagenUrl;
-        existingManga.NumeroCapitulos = updatedManga.NumeroCapitulos;
-        existingManga.Estado = updatedManga.Estado;
         existingManga.Genero = updatedManga.Genero;
-        existingManga.Calificacion = updatedManga.Calificacion;
+        existingManga.Capitulos = updatedManga.Capitulos;
 
-        return await Task.FromResult(existingManga);
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     public async Task<bool> DeleteMangaAsync(int id)
     {
         _logger.LogInformation($"Eliminando manga con ID: {id}");
-        var manga = _mangas.FirstOrDefault(m => m.Id == id);
+        var manga = await _context.Manga.FindAsync(id);
         if (manga == null)
             return false;
 
-        _mangas.Remove(manga);
-        return await Task.FromResult(true);
+        _context.Manga.Remove(manga);
+        await _context.SaveChangesAsync();
+        return true;
     }
 } 

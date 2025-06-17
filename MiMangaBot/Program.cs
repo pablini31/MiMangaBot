@@ -1,10 +1,27 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using MiMangaBot.Domain.Data;
 using MiMangaBot.Services.Features.Mangas;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// Configurar la base de datos
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Configurar CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
 
 // Configure Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -23,13 +40,19 @@ builder.Services.AddScoped<MangaService>();
 
 var app = builder.Build();
 
-// Habilitar Swagger SIEMPRE
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MiMangaBot API V1");
-    c.RoutePrefix = string.Empty; // Swagger en la raíz
-});
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "MiMangaBot API V1");
+        c.RoutePrefix = "swagger";
+    });
+}
+
+// Habilitar CORS
+app.UseCors();
 
 //app.UseHttpsRedirection(); // Eliminado para evitar problemas de redirección
 app.UseAuthorization();

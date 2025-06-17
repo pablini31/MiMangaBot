@@ -10,19 +10,18 @@ namespace MiMangaBot.Domain.Data
         {
         }
 
-        public DbSet<Manga> Mangas { get; set; }
+        public DbSet<Manga> Manga { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Manga>()
-                .Property(m => m.Titulo)
-                .IsRequired();
+                .ToTable("Manga");
 
             modelBuilder.Entity<Manga>()
-                .Property(m => m.Calificacion)
-                .HasPrecision(3, 2);
+                .Property(m => m.Titulo)
+                .IsRequired();
         }
     }
 } 

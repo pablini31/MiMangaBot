@@ -58,7 +58,7 @@ public class MangaController : ControllerBase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var createdManga = await _mangaService.AddMangaAsync(manga);
+            var createdManga = await _mangaService.CreateMangaAsync(manga);
             return CreatedAtAction(nameof(GetMangaById), new { id = createdManga.Id }, createdManga);
         }
         catch (Exception ex)
@@ -69,18 +69,18 @@ public class MangaController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<Manga>> UpdateManga(int id, Manga manga)
+    public async Task<ActionResult> UpdateManga(int id, Manga manga)
     {
         try
         {
             if (id != manga.Id)
                 return BadRequest("ID no coincide");
 
-            var updatedManga = await _mangaService.UpdateMangaAsync(id, manga);
-            if (updatedManga == null)
+            var updated = await _mangaService.UpdateMangaAsync(manga);
+            if (!updated)
                 return NotFound($"Manga con ID {id} no encontrado");
 
-            return Ok(updatedManga);
+            return NoContent();
         }
         catch (Exception ex)
         {
