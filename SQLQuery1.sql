@@ -1,10 +1,8 @@
-SELECT 
-    m.Id,
-    m.Titulo,
-    m.Autor,
-    m.FechaPublicacion,
-    m.UrlImagen,
-    g.Nombre AS Genero
-FROM Mangas m
-LEFT JOIN Generos g ON m.GeneroId = g.GeneroId
-ORDER BY m.Id;
+SELECT
+  Titulo,
+  COUNT(*) AS VecesRepetido
+FROM dbo.Mangas
+GROUP BY Titulo
+HAVING COUNT(*) > 1;
+
+select * from Mangas

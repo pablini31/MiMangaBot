@@ -3,6 +3,7 @@ using MiMangaBot.Domain.Data;
 using Microsoft.OpenApi.Models;
 using MiMangaBot.Services.Features.Mangas;
 using MiMangaBot.Domain.Repositories;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,15 +37,60 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Configure Swagger
+// Configure Swagger with enhanced documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo 
     { 
         Title = "MiMangaBot API", 
-        Version = "v1",
-        Description = "API para gestionar mangas"
+        Version = "v1.0.0",
+        Description = "API completa para gestionar mangas y géneros con información detallada de relaciones.",
+        Contact = new OpenApiContact
+        {
+            Name = "MiMangaBot Team",
+            Email = "support@mimangabot.com"
+        },
+        License = new OpenApiLicense
+        {
+            Name = "MIT License",
+            Url = new Uri("https://opensource.org/licenses/MIT")
+        }
+    });
+
+    // Include XML comments for better documentation
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+
+    // Add operation filters for better organization
+    c.TagActionsBy(api =>
+    {
+        if (api.GroupName != null)
+        {
+            return new[] { api.GroupName };
+        }
+
+        var controllerActionDescriptor = api.ActionDescriptor as Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor;
+        if (controllerActionDescriptor != null)
+        {
+            return new[] { controllerActionDescriptor.ControllerName };
+        }
+
+        return new[] { api.RelativePath };
+    });
+
+    // Add security definitions if needed
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
     });
 });
 
@@ -59,11 +105,21 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// Enhanced Swagger UI configuration
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MiMangaBot API v1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MiMangaBot API v1.0.0");
     c.RoutePrefix = "swagger";
+    c.DocumentTitle = "MiMangaBot API Documentation";
+    c.DefaultModelsExpandDepth(2);
+    c.DefaultModelExpandDepth(2);
+    c.DisplayRequestDuration();
+    c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
+    c.EnableDeepLinking();
+    c.EnableFilter();
+    c.ShowExtensions();
+    c.ShowCommonExtensions();
 });
 
 // Use CORS
